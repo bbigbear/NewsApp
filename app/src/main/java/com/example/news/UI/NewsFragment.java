@@ -2,10 +2,14 @@ package com.example.news.UI;
 
 
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -22,6 +26,7 @@ import com.example.news.Bean.RealTimeNewInfoTwo;
 import com.example.news.Model.RealTimeNewModelTwo;
 import com.example.news.R;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,9 +42,13 @@ public class NewsFragment extends Fragment {
     private RecyclerView recyclerView;
     private NewContentAdapter newContentAdapter;
     private RecyclerView.LayoutManager layoutMananger;
-
+    private SwipeRefreshLayout mSwipeRefreshLayout;
     private RealTimeNewModelTwo realTimeNewModelTwo;
-    private String path = Environment.getExternalStorageDirectory().getPath() + "/"+"DrawAPicture";
+    RealTimeNewInfoTwo result=new RealTimeNewInfoTwo();
+
+
+    //错误照片的调用
+    private String error_pic_url="http://img0.imgtn.bdimg.com/it/u=3982029889,2478115047&fm=21&gp=0.jpg";
 
     public static NewsFragment newInstance() {
 
@@ -66,10 +75,61 @@ public class NewsFragment extends Fragment {
         layoutMananger=new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(layoutMananger);
 
+        //初始化下拉刷新
+        mSwipeRefreshLayout= (SwipeRefreshLayout) view.findViewById(R.id.content_swipeRefreshLayout);
+        mSwipeRefreshLayout.setColorSchemeColors(R.color.material_blue_700);
+
         //初始化新闻请求参数
         initNewParams();
         //获取数据
         loadNewsInfo();
+        result.setRetData(result.getRetData());
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (result != null) {
+                            //加载数据到recycleView
+                            final List<RealTimeNewInfoTwo.RetDataEntity> entity = result.getRetData();
+                            ArrayList<NewsInfo> arrayList = new ArrayList<>();
+                            final ArrayList<RealTimeNewInfoTwo.RetDataEntity> listContent=new ArrayList<RealTimeNewInfoTwo.RetDataEntity>();
+                            for (int i = 0; i < entity.size(); i++) {
+                                Log.i("eeeeeeeeeeeor",entity.get(i).getImage_url());
+                                Log.i("eeeeeeeeeeeor2222",entity.get(i).getTitle());
+                                if(entity.get(i).getImage_url().isEmpty()) {
+                                    arrayList.add(new NewsInfo(entity.get(i).getTitle(), error_pic_url));
+                                    listContent.add(new RealTimeNewInfoTwo.RetDataEntity(entity.get(i).getTitle(), entity.get(i).getUrl(),
+                                            entity.get(i).getAbstract_content(), error_pic_url));
+                                }else {
+                                    arrayList.add(new NewsInfo(entity.get(i).getTitle(), entity.get(i).getImage_url()));
+                                    listContent.add(new RealTimeNewInfoTwo.RetDataEntity(entity.get(i).getTitle(), entity.get(i).getUrl(),
+                                            entity.get(i).getAbstract_content(), entity.get(i).getImage_url()));
+                                }
+
+                            }
+                            newContentAdapter = new NewContentAdapter(arrayList, getActivity());
+                            newContentAdapter.setItemClickListener(new NewContentAdapter.NewItemClickListener() {
+                                @Override
+                                public void setOnItemClick(View v, int position) {
+                                    Intent intent=new Intent(getActivity(),DetailedNewsActivity.class);
+                                    intent.putExtra("content",listContent);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putInt("position",position);
+                                    intent.putExtras(bundle);
+                                    startActivity(intent);
+                                }
+
+                            });
+                            recyclerView.setAdapter(newContentAdapter);
+                            mSwipeRefreshLayout.setRefreshing(false);
+                        }
+                    }
+                }, 5000);
+            }
+
+        });
 
         return view;
     }
@@ -78,27 +138,9 @@ public class NewsFragment extends Fragment {
         Call<RealTimeNewInfoTwo> callNews =realTimeNewModelTwo.getNewsInfoCall(initNewParams());
         callNews.enqueue(new Callback<RealTimeNewInfoTwo>() {
             @Override
-            public void onResponse(Call<RealTimeNewInfoTwo> call, Response<RealTimeNewInfoTwo> response) {
+            public void onResponse(Call<RealTimeNewInfoTwo> call, final Response<RealTimeNewInfoTwo> response) {
                 if(response.isSuccess()){
-                    RealTimeNewInfoTwo result=response.body();
-                    if(result!=null){
-                        List<RealTimeNewInfoTwo.RetDataEntity> entity= result.getRetData();
-                        
-                        //加载数据到recycleView
-
-                        ArrayList<NewsInfo> arrayList = new ArrayList<>();
-                        for (int i=0;i<entity.size();i++){
-                            arrayList.add(new NewsInfo(entity.get(i).getTitle(), path + "/" + "1.jpg"));
-                        }
-                        /*arrayList.add(new NewsInfo(entity.get(0).getTitle(), path + "/" + "1.jpg"));
-                        arrayList.add(new NewsInfo(entity.get(1).getTitle(), path + "/" + "1.jpg"));
-                        arrayList.add(new NewsInfo(entity.get(2).getTitle(), path + "/" + "1.jpg"));
-                        arrayList.add(new NewsInfo(entity.get(3).getTitle(), path + "/" + "1.jpg"));
-                        arrayList.add(new NewsInfo(entity.get(4).getTitle(), path + "/" + "1.jpg"));*/
-                        newContentAdapter = new NewContentAdapter(arrayList, getActivity());
-                        recyclerView.setAdapter(newContentAdapter);
-
-                    }
+                    result = response.body();
                 }
             }
 
@@ -109,6 +151,7 @@ public class NewsFragment extends Fragment {
         });
 
     }
+
 
     private RealTimeNewInfoReqTwo initNewParams() {
         RealTimeNewInfoReqTwo realTimeNewInfoReqTwo=null;

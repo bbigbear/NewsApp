@@ -56,6 +56,17 @@
         android:layout_width="190dp"
         android:layout_height="wrap_content"
         android:layout_gravity="right" />
+        <TextView
+            android:id="@+id/one_saying"
+            android:gravity="center"
+            android:text="---一日一言"
+            android:textSize="15sp"
+            android:textColor="@color/material_gray"
+            android:textStyle="italic"
+            android:paddingTop="20dp"
+            android:layout_width="190dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
     </LinearLayout>
 
 </RelativeLayout>

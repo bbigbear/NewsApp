@@ -90,9 +90,13 @@ public class FamousFragment extends Fragment implements View.OnClickListener {
                     FamousInfo result=response.body();
                     if(result!=null){
                         List<FamousInfo.ResultEntity> entity= result.getResult();
-                            tv_famous_saying.setText(entity.get(0).getFamous_saying() + "!");
-                            tv_famous_name.setText("--" + entity.get(0).getFamous_name());
-                            Log.i("1", "1" + entity.get(0).getFamous_saying() + "\n---" + entity.get(0).getFamous_name());
+                            if(entity.size()!=0) {
+                                tv_famous_saying.setText(entity.get(0).getFamous_saying() + "!");
+                                tv_famous_name.setText("--" + entity.get(0).getFamous_name());
+                                Log.i("1", "1" + entity.get(0).getFamous_saying() + "\n---" + entity.get(0).getFamous_name());
+                            }else {
+                                Toast.makeText(getActivity(),"没有相关名言，请重新输入关键字！",Toast.LENGTH_SHORT).show();
+                            }
 
                     }
                 }

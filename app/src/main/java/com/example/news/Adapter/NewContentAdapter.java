@@ -1,19 +1,19 @@
 package com.example.news.Adapter;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.news.Bean.NewsInfo;
 import com.example.news.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by bear on 2016/5/18.
@@ -23,7 +23,19 @@ public class NewContentAdapter extends RecyclerView.Adapter<NewContentAdapter.Ne
     private LayoutInflater layoutInflater;
     private ArrayList<NewsInfo> newsInfos;
     private Context mContext;
+    private NewItemClickListener itemClickListener;
 
+
+    //定义接口
+    public static interface NewItemClickListener {
+        public void setOnItemClick(View v,int position);
+    }
+
+
+
+    public void setItemClickListener(NewItemClickListener itemClickListener) {
+        this.itemClickListener = itemClickListener;
+    }
 
     public NewContentAdapter(ArrayList<NewsInfo> newsInfos, Context mContext) {
         this.newsInfos = newsInfos;
@@ -39,13 +51,17 @@ public class NewContentAdapter extends RecyclerView.Adapter<NewContentAdapter.Ne
                 (TextView) view.findViewById(R.id.news_content),
                 (ImageView) view.findViewById(R.id.news_icon)
         );
+
     }
 
     @Override
     public void onBindViewHolder(NewViewHolder holder, int position) {
         NewsInfo newsInfo= newsInfos.get(position);
         holder.tv_news_content.setText(newsInfo.getNews_content());
-        holder.iv_news_icon.setImageURI(Uri.parse(newsInfo.getNews_img()));
+        Picasso.with(mContext).load(newsInfo.getNews_img())
+                .placeholder(R.mipmap.ic_launcher)
+                .error(R.mipmap.ic_launcher)
+                .into(holder.iv_news_icon);
 
     }
 
@@ -59,15 +75,21 @@ public class NewContentAdapter extends RecyclerView.Adapter<NewContentAdapter.Ne
         private TextView tv_news_content;
         private ImageView iv_news_icon;
 
+
         public NewViewHolder(View itemView,TextView tv_news_content,ImageView iv_news_icon) {
             super(itemView);
             this.tv_news_content=tv_news_content;
             this.iv_news_icon=iv_news_icon;
+            itemView.setOnClickListener(this);
+
         }
 
         @Override
         public void onClick(View view) {
-
+            /* NewsInfo newsInfo=newsInfos.get(getAdapterPosition());*/
+            if (itemClickListener!=null) {
+                itemClickListener.setOnItemClick(view, getPosition());
+            }
         }
 
         @Override

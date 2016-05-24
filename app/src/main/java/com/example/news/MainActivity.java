@@ -1,44 +1,25 @@
 package com.example.news;
 
-import android.app.Fragment;
+
+import android.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.example.news.Adapter.DrawerItemAdapter;
-import com.example.news.Api.Constant;
 import com.example.news.Bean.DrawerContent;
-import com.example.news.Bean.FamousInfo;
-import com.example.news.Bean.FamousInfoReq;
-import com.example.news.Bean.RealTimeNewInfo;
-import com.example.news.Bean.RealTimeNewInfoReq;
-import com.example.news.Bean.RealTimeNewInfoReqTwo;
-import com.example.news.Bean.RealTimeNewInfoTwo;
-import com.example.news.Model.FamousInfoModel;
-import com.example.news.Model.RealTimeNewModel;
-import com.example.news.Model.RealTimeNewModelTwo;
 import com.example.news.UI.FamousFragment;
-import com.example.news.UI.MyFragment;
 import com.example.news.UI.NewsFragment;
 import com.example.news.UI.SettingFragment;
 
 import java.util.ArrayList;
 import java.util.List;
-
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.http.GET;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,10 +31,13 @@ public class MainActivity extends AppCompatActivity {
 
     //定义fragment
     private NewsFragment mNewsFragment;
-    private MyFragment mMyFragment;
     private SettingFragment mSettingFragment;
     private FamousFragment mFamousFragment;
 
+    /**
+     * 用于对Fragment进行管理
+     */
+    private FragmentManager fragmentManager;
 
 
     @Override
@@ -70,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
 
         //初始化控件
         initView();
+        fragmentManager = getFragmentManager();
+        //默认显示新闻列表
+        setItemSelection(0);
 
         //设置适配器
         DrawerItemAdapter adapter=new DrawerItemAdapter(MainActivity.this,R.layout.item_left_menu,menu_list);
@@ -82,6 +69,56 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void setItemSelection(int i) {
+        //开启一个事务
+        FragmentTransaction ft=getSupportFragmentManager().beginTransaction();
+        //隐藏所有的fragment，防止多个显示
+        hideFragment(ft);
+        switch (i){
+            case 0:
+                toolbar.setTitle("新闻列表");
+                if(mNewsFragment==null){
+                    mNewsFragment=new NewsFragment();
+                    ft.add(R.id.id_content_container,mNewsFragment);
+                }else {
+                    ft.show(mNewsFragment);
+                }
+                break;
+            case 1:
+                toolbar.setTitle("名人名言");
+                if(mFamousFragment==null){
+                    mFamousFragment=new FamousFragment();
+                    ft.add(R.id.id_content_container,mFamousFragment);
+                }else {
+                    ft.show(mFamousFragment);
+                }
+                break;
+            case 2:
+                toolbar.setTitle("设置");
+                if (mSettingFragment==null){
+                    mSettingFragment=new SettingFragment();
+                    ft.add(R.id.id_content_container,mSettingFragment);
+                }else {
+                    ft.show(mSettingFragment);
+                }
+                break;
+            default:
+                break;
+        }
+        ft.commit();
+    }
+
+    private void hideFragment(FragmentTransaction transaction) {
+        if(mNewsFragment!=null){
+            transaction.hide(mNewsFragment);
+        }
+        if(mFamousFragment!=null){
+            transaction.hide(mFamousFragment);
+        }
+        if (mSettingFragment!=null){
+            transaction.hide(mSettingFragment);
+        }
+    }
 
 
     private void initToolBar() {
@@ -105,39 +142,31 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initMenu() {
-        DrawerContent news_item=new DrawerContent("新闻列表",R.drawable.new_select);
+        DrawerContent news_item=new DrawerContent("新闻列表",R.mipmap.ic_news_icon);
         menu_list.add(news_item);
-        DrawerContent my_item=new DrawerContent("名人名言",R.drawable.my_select);
+        DrawerContent my_item=new DrawerContent("名人名言",R.mipmap.ic_famous_icon);
         menu_list.add(my_item);
-        DrawerContent setting_item=new DrawerContent("设置",R.drawable.setting_select);
+        DrawerContent setting_item=new DrawerContent("设置",R.mipmap.ic_my_icon);
         menu_list.add(setting_item);
     }
 
     private class DrawerItemClickListenerLeft implements android.widget.AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-            FragmentTransaction ft=getSupportFragmentManager().beginTransaction();
 
             switch (position){
                 case 0:
-                    toolbar.setTitle("新闻列表");
-                    mNewsFragment=new NewsFragment();
-                    ft.replace(R.id.id_content_container,mNewsFragment);
+                    setItemSelection(0);
                     break;
                 case 1:
-                    toolbar.setTitle("名人名言");
-                    mFamousFragment=new FamousFragment();
-                    ft.replace(R.id.id_content_container,mFamousFragment);
+                    setItemSelection(1);
                     break;
                 case 2:
-                    toolbar.setTitle("设置");
-                    mSettingFragment=new SettingFragment();
-                    ft.replace(R.id.id_content_container,mSettingFragment);
+                    setItemSelection(2);
                     break;
                 default:
                     break;
             }
-            ft.commit();
             drawer_layout.closeDrawer(listView);
 
         }

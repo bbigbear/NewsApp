@@ -1,6 +1,5 @@
 package com.example.news.Api;
 
-import com.example.news.Bean.RealTimeNewInfo;
 import com.example.news.Bean.RealTimeNewInfoTwo;
 
 import retrofit2.Call;

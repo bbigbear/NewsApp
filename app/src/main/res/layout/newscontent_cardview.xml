@@ -11,14 +11,17 @@
         android:id="@+id/news_item_contain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:padding="5dp">
     <TextView
         android:id="@+id/news_content"
+        android:gravity="center_vertical"
         android:layout_width="0dp"
         android:layout_gravity="left|center_vertical"
         android:layout_height="100dp"
         android:layout_weight="1"
-        android:text="你好"/>
+        android:text="你好"
+        />
 
     <ImageView
         android:id="@+id/news_icon"

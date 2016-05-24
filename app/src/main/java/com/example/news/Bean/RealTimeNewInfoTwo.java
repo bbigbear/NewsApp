@@ -2,12 +2,13 @@ package com.example.news.Bean;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by bear on 2016/5/21.
  */
-public class RealTimeNewInfoTwo {
+public class RealTimeNewInfoTwo implements Serializable{
     private String errNum;
     private String errMsg;
     private List<RetDataEntity> retData;
@@ -38,12 +39,19 @@ public class RealTimeNewInfoTwo {
 
 
 
-    public static class RetDataEntity {
+    public static class RetDataEntity implements Serializable{
         private String title;
         private String url;
         @SerializedName("abstract")
         private String abstract_content;
         private String image_url;
+
+        public RetDataEntity(String title, String url, String abstract_content, String image_url) {
+            this.title = title;
+            this.url = url;
+            this.abstract_content = abstract_content;
+            this.image_url = image_url;
+        }
 
         public String getTitle() {
             return title;
